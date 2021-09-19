@@ -1,0 +1,22 @@
+{
+  "name": "nord-assignment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rushiwadkar007/nord-assignment.git"
+  },
+  "author": "Rushikesh Wadkar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rushiwadkar007/nord-assignment/issues"
+  },
+  "homepage": "https://github.com/rushiwadkar007/nord-assignment#readme",
+  "dependencies": {
+    "solc": "^0.8.7-fixed"
+  }
+}

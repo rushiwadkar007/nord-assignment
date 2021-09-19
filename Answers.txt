@@ -1,0 +1,131 @@
+Que 6) Correct Contract - 
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+
+// 	import './interfaces/IToken.sol';
+	import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol';
+	contract Token is ERC20 {
+
+		address public owner;
+		string public tokenName;
+		string public tokenSymbol;
+		uint256 public tokenDecimals;
+		bool public initialized = false;
+		
+		constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol){
+		    tokenName = _name;
+		    tokenSymbol = _symbol;
+		    tokenDecimals = decimals();
+		}
+		
+		function initialize(
+		address _owner,
+		string calldata _name,
+		string calldata _symbol,
+		uint8 _decimals
+		) external {
+			require(initialized == true);
+			owner = _owner;
+			tokenName = _name;
+			tokenSymbol = _symbol;
+			tokenDecimals = _decimals; 
+			initialized = false;
+		}
+		
+		function setOwner(address _owner) external {
+			owner = _owner;
+		}
+		
+		function mint(address recipient, uint amount) external {
+			_mint(recipient, amount);
+		}
+		
+		function burn(address recipient, uint amount) external {
+			_burn(recipient, amount);
+		}
+	}
+	
+	// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+
+interface IDepositContract {
+    function deposit(
+        bytes calldata pubkey,
+        bytes calldata withdrawal_credentials,
+        bytes calldata signature,
+        bytes32 deposit_data_root
+    ) external payable;
+
+}
+
+contract Staking  {
+    mapping(address => uint) public balances;
+    mapping(address => bool) public changeClaimed;
+    address payable public admin;
+    uint public end;
+    bool public finalized;
+    uint public totalInvested;
+    uint public totalChange;
+    mapping(bytes => bool) public pubkeyUsed;
+    
+    IDepositContract public iDepositContract = IDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
+    
+    event newInvestor(
+        address investor);
+        
+    constructor(){
+        admin = payable(msg.sender);
+        end = block.timestamp + 7 days;
+    }
+    
+    function invest() external payable{
+        require(block.timestamp < end, 'too late');
+        if(balances[msg.sender] == 0){
+            emit newInvestor(msg.sender);
+        }
+        uint fee = msg.value * 1 / 100;
+        uint amountInvested = msg.value - fee;
+        admin.transfer(fee);
+        
+        balances[msg.sender] += amountInvested;
+    }
+    
+    function finalize() external {
+        require( block.timestamp >end, "too early");
+        require(finalized == false, 'already finalized');
+        finalized = true;
+        totalInvested = address(this).balance;
+        totalChange = address(this).balance %32 ether;
+    }
+    
+    function getChange() external payable{
+        require(finalized == true, 'not finalized');
+        require(balances[msg.sender] > 0, "not an investor");
+        require(changeClaimed[msg.sender] == false, "change already claimed");
+        changeClaimed[msg.sender] = true;
+        uint amount = totalChange * balances[msg.sender]/totalInvested ;
+        payable(msg.sender).transfer(amount);
+    }
+    
+    function deposit(
+        bytes calldata pubkey,
+        bytes calldata withdrawal_credentials,
+        bytes calldata signature,
+        bytes32 deposit_data_root
+    ) external  {
+        require(finalized == true, 'too early');
+        require(msg.sender == admin, 'only admin');
+        require(address(this).balance >= 32 ether);
+        require(pubkeyUsed[pubkey] == false, 'this pubkey was already used');
+        iDepositContract.deposit{value: 32 ether}(
+            pubkey,
+            withdrawal_credentials,
+            signature, 
+            deposit_data_root);
+        
+    }
+    
+} 
+
