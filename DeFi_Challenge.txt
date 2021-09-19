@@ -1,0 +1,86 @@
+DeFi Challenge
+=====================
+
+Submission: - In order to submit, 
+				1) Create a github repo.
+				2) Put your answer for questions 1 to 6 in a .txt file and upload to github repo.
+				3) For question 7, initialize the truffle or hardhat project and implement required smart contract.It will be considered as bonus point if repo includes 					   test cases.
+
+
+1. How is gas usage calculated?
+2. What’s the difference between storage, memory, and stack?
+3. What are modifiers used for? Provide an example.
+4. What are interfaces in solidity? Write an example interface.
+5. What is a proxy contract? Provide a code example of how it can be used.
+
+6. Fix the code below so it will function as intended.
+
+	pragma solidity ^0.5.0;
+	import './interfaces/IToken.sol';
+	import './ERC20.sol';
+	contract Token is ERC20, IToken {
+
+		address public owner;
+		string public name;
+		string public symbol;
+		uint8 public decimals;
+		bool public initialized = false;
+		
+		function initialize(
+		address _owner,
+		string calldata _name,
+		string calldata _symbol,
+		uint8 _decimals
+		) external {
+			require(initialized == true);
+			owner = _owner;
+			name = _name;
+			symbol = _symbol;
+			decimals = _decimals;
+			initialized = false;
+		}
+		
+		function setOwner(address _owner) external {
+			owner = _owner;
+		}
+		
+		function mint(address recipient, uint amount) external {
+			_mint(recipient, amount);
+		}
+		
+		function burn(address recipient, uint amount) external {
+			_burn(recipient, amount);
+		}
+	}
+
+
+7. Write a smart contract in solidity for following specification, deploy on testnet (Kovan) and verify the contract on etherescan.
+
+	Note: Provide the deployed contract address in README.md of repo while submitting the assignment.
+
+            - This is a gambling game with N players (N should be minimum 3).
+            
+            - The owner of the contract upon initialising, will specify how many people are playing.
+            
+            - The owner will also specify, how much each player will stake.
+            
+            - Each player should stake the exact amount specified by the owner.
+            
+            - If a player stakes more than specified, the contract will take the extra amount.
+            
+            - Once a player has staked their amount, they are allowed to refund that amount up until all players have staked.
+            
+            - Once all players have staked, anyone can then call a function that will select at random one of the players.
+              	
+              	Note: Use chainlink VRF to choose random player (https://docs.chain.link/docs/chainlink-vrf/)
+            
+            - All players should then be notified of the winner.
+            
+            - 99% of the total staked amount, is paid to the winner. 1% is paid to the contract.
+            
+            - The owner of the contract is able to withdraw from the contract when he sees fit.
+            
+            - Each participant, must have an equal chance of winning.
+            
+            - Assume that the owner is not allowed to participate.
+
